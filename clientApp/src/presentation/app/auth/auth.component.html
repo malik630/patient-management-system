@@ -1,0 +1,29 @@
+<main class="main">
+    <div class="content">
+        
+    <form class="form" [formGroup]="authForm" (ngSubmit)="onSubmit()"> 
+        
+
+        <div>
+            <label class="label" for="email">Email</label>
+            <input class="input" id="email" formControlName="email" /> 
+            <div *ngIf="authForm.get('email')?.invalid && authForm.get('email')?.touched">
+                <small *ngIf="authForm.get('email')?.hasError('required')">Email is required.</small>
+                <small *ngIf="authForm.get('email')?.hasError('email')">Please enter a valid email.</small>
+            </div>
+        </div>
+    
+        <div>
+            <label class="label" for="password">Password</label>
+            <input class="input" type="password" id="password" formControlName="password" /> 
+            <div *ngIf="authForm.get('password')?.invalid && authForm.get('password')?.touched">
+                <small *ngIf="authForm.get('password')?.hasError('required')">Password is required.</small>
+                <small *ngIf="authForm.get('password')?.hasError('minlength')">Password must be at least 6 characters
+                    long.</small>
+            </div>
+        </div>
+    
+        <button class="button" type="submit" [disabled]="!authForm.valid">Login</button> 
+    </form>
+    </div>
+</main>
