@@ -1,0 +1,39 @@
+<main class="main">
+  <div class="content">
+    <h1>Bienvenue, Connectez-vous à votre santé.</h1>
+    <svg xmlns="http://www.w3.org/2000/svg" width="86" height="90" viewBox="0 0 86 90" fill="none">
+      <path
+        d="M40.6953 15.7547C40.7609 15.8689 40.9253 15.8689 40.9909 15.7553C40.992 15.7531 40.993 15.7515 40.9941 15.7494C46.7843 5.07619 64.6192 0.454693 75.2658 5.36437C85.9977 10.3167 88.5112 24.1332 82.0166 33.5897C74.2838 44.8552 61.0437 52.0276 49.6127 59.6269C43.3369 63.8055 37.2852 68.6031 33.0639 74.943C29.1842 80.7706 30.0541 85.835 38.3792 83.9298C46.7843 82.0033 54.9333 77.5793 62.2498 73.1072C62.4024 73.0149 62.4488 72.8852 62.3885 72.7176C58.9091 62.4874 74.4706 59.707 75.4846 69.3556C76.1623 75.7702 68.8085 79.223 63.9842 75.0337C63.8348 74.9056 63.6853 74.904 63.5359 75.0284C56.8934 80.4648 49.7547 84.661 42.1201 87.6174C36.3406 89.8535 25.4539 91.5825 26.1263 81.5017C26.8361 70.8979 39.5532 60.278 47.7769 54.8827C58.0606 48.1372 66.1668 43.2916 73.0564 35.5695C81.595 25.9957 82.6036 12.4247 67.1488 9.44153C56.1767 7.3229 45.4768 13.4066 40.5458 23.4128C40.4316 23.6444 40.3356 23.6369 40.2577 23.3914C38.7597 18.795 36.1591 14.8475 32.4555 11.5495C22.4761 2.65871 7.56562 2.53597 5.82055 19.0528C3.97409 36.5675 13.4145 50.6775 24.4186 63.1704C24.4528 63.2169 24.4239 63.2825 24.3668 63.2895C24.3492 63.2916 24.3316 63.2873 24.3172 63.2772C10.1752 52.3905 -4.03082 32.9333 1.05496 13.8602C2.94412 6.76789 7.89115 1.08975 15.4371 0.16118C26.7774 -1.23167 35.4547 6.6078 40.6953 15.7547ZM72.4267 70.124C72.4267 68.0668 70.759 66.3991 68.7017 66.3991C66.6445 66.3991 64.9768 68.0668 64.9768 70.124C64.9768 72.1813 66.6445 73.849 68.7017 73.849C70.759 73.849 72.4267 72.1813 72.4267 70.124Z"
+        fill="#0198A5"
+      />
+    </svg>
+
+    <form [formGroup]="authForm" (ngSubmit)="onSubmit()">
+      
+      <mat-form-field class="input-container" appearance="outline">
+    
+        <input matInput id="email" formControlName="email" placeholder="Entrer votre nom d'utilisateur" />
+        <mat-error *ngIf="authForm.get('email')?.hasError('required')">Email is required.</mat-error>
+        <mat-error *ngIf="authForm.get('email')?.hasError('email')">Please enter a valid email.</mat-error>
+      </mat-form-field>
+
+      
+      <mat-form-field class="input-container" appearance="outline">
+        <input matInput [type]="hidePassword ? 'password' : 'text'" id="password" formControlName="password" placeholder="Entrer le mot de passe"/>
+        <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" [attr.aria-label]="'Hide password'">
+          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="authForm.get('password')?.hasError('required')">Password is required.</mat-error>
+        <mat-error *ngIf="authForm.get('password')?.hasError('minlength')">
+          Password must be at least 6 characters long.
+        </mat-error>
+      </mat-form-field>
+
+      
+      <button mat-raised-button class="submit" type="submit" [disabled]="!authForm.valid" >Connecter</button>
+    </form>
+
+    <p>Vous n'avez pas encore de compte?</p>
+    <a href="#">Contacter l'administration</a>
+  </div>
+</main>

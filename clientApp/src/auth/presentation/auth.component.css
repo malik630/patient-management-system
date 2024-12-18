@@ -1,0 +1,306 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 0 15px;
+}
+
+form {
+    max-width: 400px;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.input-container {
+    width: 100%;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.input-container input {
+    width: 100%;
+    font-size: 1rem;
+    
+}
+
+::ng-deep .input-container svg {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+
+
+form .submit {
+    width: 100%;
+    height: 2.5rem;
+    background-color: #00b4b6;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+}
+
+mat
+
+form .submit:disabled {
+    
+    background-color: #cbe4e4;
+    
+}
+
+input::placeholder {
+    color: var(--Input-text-Color, #686666);
+    font-family: Poppins;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+
+
+a {
+    color: var(--main, #0198A5);
+    font-family: Poppins;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 20px;
+    text-decoration: none;
+}
+
+h1 {
+    color: var(--Grey-400, #4F4F4F);
+    text-align: center;
+    font-family: Poppins;
+    font-size: 1.5rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    margin-bottom: 20px;
+}
+
+p {
+    color: var(--Input-text-Color, #686666);
+    text-align: center;
+    font-family: Poppins;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+}
+
+
+@media (max-width: 768px) {
+    .content {
+        padding: 0 10px;
+    }
+
+    h1 {
+        font-size: 1.25rem;
+    }
+
+    form {
+        padding: 15px;
+    }
+
+    input {
+        height: 2.5rem;
+        font-size: 0.9rem;
+    }
+
+    form button {
+        height: 2.25rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1rem;
+    }
+
+    form {
+        padding: 10px;
+    }
+
+    input {
+        height: 2rem;
+        font-size: 0.8rem;
+    }
+
+    form button {
+        height: 2rem;
+        font-size: 0.8rem;
+    }
+}
+
+
+
+
+/* 
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 0 15px;
+}
+
+form {
+    max-width: 400px;
+    width: 100%;
+    padding: 20px;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+
+
+
+
+.full-width {
+    width: 100%;
+    position: relative;
+    border-radius: 30px;
+    margin-bottom: 15px;
+}
+
+.full-width input {
+    width: 100%;
+    border-radius: 30px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    padding: 0 1rem;
+}
+
+.input-container svg {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    width: 20px;
+    height: 20px;
+}
+
+form .submit {
+    width: 100%;
+    height: 2.5rem;
+    background-color: #00b4b6;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+input::placeholder {
+    color: var(--Input-text-Color, #686666);
+    font-family: Poppins;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+a {
+    color: var(--main, #0198A5);
+    font-family: Poppins;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 20px;
+    text-decoration: none;
+}
+
+h1 {
+    color: var(--Grey-400, #4F4F4F);
+    text-align: center;
+    font-family: Poppins;
+    font-size: 1.5rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    margin-bottom: 20px;
+}
+
+p {
+    color: var(--Input-text-Color, #686666);
+    text-align: center;
+    font-family: Poppins;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+}
+
+
+@media (max-width: 768px) {
+    .content {
+        padding: 0 10px;
+    }
+
+    h1 {
+        font-size: 1.25rem;
+    }
+
+    form {
+        padding: 15px;
+    }
+
+    input {
+        height: 2.5rem;
+        font-size: 0.9rem;
+    }
+
+    form button {
+        height: 2.25rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1rem;
+    }
+
+    form {
+        padding: 10px;
+    }
+
+    input {
+        height: 2rem;
+        font-size: 0.8rem;
+    }
+
+    form button {
+        height: 2rem;
+        font-size: 0.8rem;
+    }
+} */

@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { PatientModel } from '../models/patient.model';
 
 @Injectable({
     providedIn: 'root',
 })
-export abstract class PatientRepository {
+export abstract class AuthRepository {
     abstract login(params: {}): Promise<boolean>;
 }

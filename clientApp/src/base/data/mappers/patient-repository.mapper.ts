@@ -1,5 +1,5 @@
-import { Mapper } from "../../../../base/utiles/mapper";
-import { PatientModel } from "../../../../domain/models/patient.model";
+import { Mapper } from "../../utiles/mapper";
+import { PatientModel } from "../../domain/models/patient.model";
 import { PatientEntity } from "../entities/patient-entity";
 
 export class PatientImplementationRepositoryMapper extends Mapper<PatientEntity, PatientModel> {
