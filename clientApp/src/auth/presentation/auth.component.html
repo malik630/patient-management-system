@@ -30,7 +30,11 @@
       </mat-form-field>
 
       
-      <button mat-raised-button class="submit" type="submit" [disabled]="!authForm.valid" >Connecter</button>
+      <button mat-raised-button class="submit" type="submit" [disabled]="!authForm.valid || isLoading" >
+        
+        <mat-spinner *ngIf="isLoading" diameter="20" class="uploader-status" ></mat-spinner>
+        <span *ngIf="!isLoading">Connecter</span>
+      </button>
     </form>
 
     <p>Vous n'avez pas encore de compte?</p>

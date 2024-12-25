@@ -21,28 +21,18 @@ form {
     box-sizing: border-box;
 }
 
+.mat-icon{
+    color: #6A707C
+}
+
 .input-container {
     width: 100%;
-    position: relative;
     margin-bottom: 10px;
 }
 
-.input-container input {
-    width: 100%;
-    font-size: 1rem;
-    
-}
 
-::ng-deep .input-container svg {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-}
+
+
 
 
 
