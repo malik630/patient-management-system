@@ -114,6 +114,15 @@ class AuthenticationViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         method='post',
         request_body=LogoutSerializer,
+        manual_parameters=[
+            openapi.Parameter(
+                'Authorization',
+                openapi.IN_HEADER,
+                description="Ajouter le token d'accès dans ce format : Bearer <access_token>",
+                type=openapi.TYPE_STRING,
+                required=True
+            ),
+        ],
         responses={
             200: 'Déconnexion réussie',
             400: 'Token invalide'

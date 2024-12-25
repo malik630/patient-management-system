@@ -27,6 +27,10 @@ from django.urls import path, re_path
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from authentification.views import AuthenticationViewSet
+from Med_Patient.views import PersonnelAdministratifViewSet
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -41,12 +45,10 @@ schema_view = get_schema_view(
    permission_classes=(permissions.AllowAny,),
 )
 
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from authentification.views import AuthenticationViewSet
 
 router = DefaultRouter()
 router.register(r'auth', AuthenticationViewSet, basename='authentication')
+router.register(r'personnel', PersonnelAdministratifViewSet, basename='personnel')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

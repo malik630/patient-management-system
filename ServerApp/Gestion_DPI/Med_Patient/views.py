@@ -1,0 +1,194 @@
+from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework import status
+from .serializers import UserSerializer, PatientSerializer, DossierPatientSerializer
+from .permissions import IsPersonnelAdministratif
+from django.db import transaction
+from datetime import date
+from rest_framework.permissions import IsAuthenticated
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
+class PersonnelAdministratifViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated, IsPersonnelAdministratif]
+
+     # Documentation Swagger
+    @swagger_auto_schema(
+        method='post',
+        operation_summary="Créer un dossier patient informatisé (DPI)",
+        operation_description=(
+            "Cette fonction permet au personnel administratif de créer un dossier patient informatisé (DPI). "
+            "Elle inclut la création d'un utilisateur, d'un patient et du dossier patient associé."
+        ),
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "user": openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    description="Données de l'utilisateur à créer",
+                    properties={
+                        "username": openapi.Schema(type=openapi.TYPE_STRING, description="Nom d'utilisateur"),
+                        "email": openapi.Schema(type=openapi.TYPE_STRING, description="Email"),
+                        "password": openapi.Schema(type=openapi.TYPE_STRING, description="Mot de passe"),
+                        "first_name": openapi.Schema(type=openapi.TYPE_STRING, description="Prénom"),
+                        "last_name": openapi.Schema(type=openapi.TYPE_STRING, description="Nom"),
+                    },
+                    required=["username", "email", "password", "first_name", "last_name"],
+                ),
+                "patient": openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    description="Données du patient à créer",
+                    properties={
+                        "numero_securite_sociale": openapi.Schema(
+                            type=openapi.TYPE_STRING, description="Numéro de sécurité sociale"
+                        ),
+                        "date_naissance": openapi.Schema(
+                            type=openapi.TYPE_STRING, format="date", description="Date de naissance (YYYY-MM-DD)"
+                        ),
+                        "adresse": openapi.Schema(type=openapi.TYPE_STRING, description="Adresse"),
+                        "telephone": openapi.Schema(type=openapi.TYPE_STRING, description="Numéro de téléphone"),
+                        "mutuelle": openapi.Schema(type=openapi.TYPE_STRING, description="Nom de la mutuelle"),
+                        "personne_contact_nom": openapi.Schema(
+                            type=openapi.TYPE_STRING, description="Nom de la personne de contact"
+                        ),
+                        "personne_contact_telephone": openapi.Schema(
+                            type=openapi.TYPE_STRING, description="Téléphone de la personne de contact"
+                        ),
+                    },
+                    required=[
+                        "numero_securite_sociale",
+                        "date_naissance",
+                        "adresse",
+                        "telephone",
+                        "mutuelle",
+                        "personne_contact_nom",
+                        "personne_contact_telephone",
+                    ],
+                ),
+            },
+            required=["user", "patient"],
+        ),
+        responses={
+            201: openapi.Response(
+                description="Création réussie",
+                examples={
+                    "application/json": {
+                        "message": "Patient et dossier créés avec succès",
+                        "user": {
+                            "username": "test_patient",
+                            "email": "test_patient@example.com",
+                            "first_name": "test",
+                            "last_name": "patient",
+                        },
+                        "patient": {
+                            "numero_securite_sociale": "123456789000000",
+                            "date_naissance": "1982-10-12",
+                            "adresse": "123 Avenue des Champs",
+                            "telephone": "0601020304",
+                            "mutuelle": "Mutuelle B",
+                            "personne_contact_nom": "Jane Doe",
+                            "personne_contact_telephone": "0987654321",
+                        },
+                        "dossier": {
+                            "NSS": "123456789000000",
+                            "date_derniere_mise_a_jour": "2024-12-25",
+                        },
+                    }
+                },
+            ),
+            400: openapi.Response(
+                description="Erreur de validation",
+                examples={
+                    "application/json": {"error": "Les données utilisateur sont requises"}
+                },
+            ),
+            403: openapi.Response(
+                description="Accès refusé",
+                examples={
+                    "application/json": {
+                        "error": "Accès non autorisé. Seul le personnel administratif peut créer des patients."
+                    }
+                },
+            ),
+            500: openapi.Response(
+                description="Erreur interne",
+                examples={"application/json": {"error": "Une erreur est survenue: <message_erreur>"}},
+            ),
+        },
+    )
+    
+    @action(detail=False, methods=['post'])
+    @transaction.atomic  # Assure que toutes les créations se font ou aucune
+    def creer_DPI(self, request):
+        try:
+            # Vérification du rôle
+            if not request.user.role == 'PA':
+                return Response(
+                    {'error': 'Accès non autorisé. Seul le personnel administratif peut créer des patients.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            # 1. Création de l'utilisateur
+            user_data = request.data.get('user')
+            if not user_data:
+                return Response(
+                    {'error': 'Les données utilisateur sont requises'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            user_serializer = UserSerializer(data=user_data)
+            if not user_serializer.is_valid():
+                return Response(
+                    user_serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            user = user_serializer.save()
+
+            # 2. Création du patient
+            patient_data = request.data.get('patient')
+            if not patient_data:
+                return Response(
+                    {'error': 'Les données patient sont requises'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Ajout de l'ID utilisateur aux données patient
+            patient_data['user'] = user.id
+            patient_serializer = PatientSerializer(data=patient_data)
+            if not patient_serializer.is_valid():
+                # En cas d'erreur, on annule la création de l'utilisateur
+                user.delete()
+                return Response(
+                    patient_serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            patient = patient_serializer.save()
+
+            # 3. Création du dossier patient
+            dossier_data = {
+                'NSS': patient.numero_securite_sociale,
+                'date_derniere_mise_a_jour': date.today()
+            }
+            dossier_serializer = DossierPatientSerializer(data=dossier_data)
+            if not dossier_serializer.is_valid():
+                return Response(
+                    dossier_serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            dossier = dossier_serializer.save()
+
+            # Réponse avec toutes les données créées
+            return Response({
+                'message': 'Patient et dossier créés avec succès',
+                'user': user_serializer.data,
+                'patient': patient_serializer.data,
+                'dossier': dossier_serializer.data
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            # En cas d'erreur, la transaction est automatiquement annulée
+            return Response(
+                {'error': f'Une erreur est survenue: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
