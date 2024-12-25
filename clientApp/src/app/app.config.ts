@@ -16,7 +16,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     { provide: AuthRepository, useClass: AuthImplementationRepository }, // Provide repository implementation
     { provide: LoginUseCase, useClass: LoginUseCase }, // Provide use case
-    provideHttpClient(withFetch()), provideAnimationsAsync(),
+    provideHttpClient(withFetch()), provideAnimationsAsync(), provideAnimationsAsync(),
   
   ]
 };

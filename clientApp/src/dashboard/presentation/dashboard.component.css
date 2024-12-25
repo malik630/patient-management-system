@@ -1,0 +1,346 @@
+/* Conteneur du tableau de bord */
+.dashboard-container {
+  display: flex;
+  flex-direction: column; /* Aligner les éléments verticalement */
+  align-items: flex-start; /* Aligner à gauche */
+  position: fixed; /* Fixer le tableau de bord à gauche */
+  top: 0;
+  left: 0;
+  width: 20%; /* Largeur du dashboard : 20% de la page (modifiable entre 20% et 30%) */
+  height: 100vh; /* Remplir toute la hauteur de la page */
+  margin: 0;
+  padding: 0;
+  background-color: #FFFFFF; /* Couleur de fond blanche */
+  box-sizing: border-box; /* Assurer que padding et bordures n'affectent pas la taille */
+}
+
+/* En-tête avec image et titre */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  background-color: #FFFFFF; /* Fond blanc pour l'en-tête */
+  padding: 10px;
+  width: 100%;
+}
+
+.dashboard-image {
+  width: 50px; /* Taille de l'image carrée */
+  height: 50px;
+  margin-right: 10px; /* Espacement entre l'image et le texte */
+  object-fit: cover; /* Maintient les proportions de l'image sans la déformer */
+}
+
+.dashboard-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #337E92; /* Vert pour le titre */
+  padding-left: 10px;
+  border-left: 2px solid transparent; /* Bordure gauche transparente */
+}
+
+/* Effet hover pour le titre */
+.dashboard-title:hover {
+  border-left: 2px solid #337E92; /* Bordure gauche verte au survol */
+  color: #337E92; /* Couleur du texte verte au survol */
+}
+
+/* Élément du tableau de bord avec padding réduit */
+.dashboard-item {
+  width: 100%; /* La largeur de chaque élément est 100% de la largeur du dashboard */
+  padding: 8px 0; /* Réduction du padding en haut et en bas */
+  margin: 0;
+  background-color: #FFFFFF; /* Couleur de fond blanche */
+  border: none; /* Pas de bordure */
+  box-sizing: border-box; /* Inclure les bordures dans la taille totale */
+  text-align: center; /* Centrer le texte */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px; /* Hauteur des éléments réduite */
+  cursor: pointer; /* Change le curseur pour indiquer que l'élément est cliquable */
+  color: #4D4D4D; /* Couleur du texte par défaut */
+  border-left: 2px solid transparent; /* Bordure gauche transparente */
+}
+
+/* Effet hover pour les éléments du tableau de bord */
+.dashboard-item:hover {
+  background-color: #E7F0F2; /* Changement de la couleur de fond lors du survol */
+  color: #337E92; /* Changement de la couleur du texte lors du survol */
+  border-left: 5px solid #337E92; /* Bordure gauche verte au survol */
+}
+
+/* Pour les boutons "Settings" et "Logout" en bas du tableau de bord */
+.dashboard-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: auto; /* Placer les boutons en bas */
+  padding: 10px;
+}
+
+.footer-button {
+  width: 100%; /* Largeur des boutons égale à celle des éléments */
+  padding: 8px 0; /* Réduction du padding */
+  margin: 0; /* Pas de marge */
+  background-color: #FFFFFF; /* Fond blanc pour les boutons */
+  color: #4D4D4D; /* Couleur du texte par défaut */
+  border: none; /* Pas de bordure */
+  cursor: pointer; /* Change le curseur pour indiquer que c'est cliquable */
+  font-size: 16px;
+  text-align: center; /* Centrer le texte */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 2px solid transparent; /* Bordure gauche transparente */
+}
+
+/* Effet hover pour les boutons */
+.footer-button:hover {
+  background-color: #E7F0F2; /* Changement de la couleur de fond lors du survol */
+  color: #337E92; /* Changement de la couleur du texte lors du survol */
+  border-left: 2px solid #337E92; /* Bordure gauche verte au survol */
+}
+
+/* Pour le bouton Logout qui a une couleur de texte différente */
+.footer-button.logout-button {
+  color: #000000; /* Couleur du texte en noir pour le bouton Logout */
+}
+
+/* Pour le reste du contenu de la page */
+body {
+  margin-left: 20%; /* Laisser de l'espace pour le dashboard sur la gauche */
+  background-color: #FFFFFF; /* Fond blanc pour la page */
+}
+
+/* Conteneur du tableau de bord */
+.dashboard-container {
+    display: flex;
+    flex-direction: column; /* Aligner les éléments verticalement */
+    align-items: flex-start; /* Aligner à gauche */
+    position: fixed; /* Fixer le tableau de bord à gauche */
+    top: 0;
+    left: 0;
+    width: 20%; /* Largeur du dashboard : 20% de la page (modifiable entre 20% et 30%) */
+    height: 100vh; /* Remplir toute la hauteur de la page */
+    margin: 0;
+    padding: 0;
+    background-color: #FFFFFF; /* Couleur de fond blanche */
+    box-sizing: border-box; /* Assurer que padding et bordures n'affectent pas la taille */
+  }
+  
+  /* En-tête avec image et titre */
+  .dashboard-header {
+    display: flex;
+    align-items: center;
+    background-color: #FFFFFF; /* Fond blanc pour l'en-tête */
+    padding: 10px;
+    width: 100%;
+  }
+  
+  .dashboard-image {
+    width: 50px; /* Taille de l'image carrée */
+    height: 50px;
+    margin-right: 10px; /* Espacement entre l'image et le texte */
+    object-fit: cover; /* Maintient les proportions de l'image sans la déformer */
+  }
+  
+  .dashboard-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #337E92; /* Vert pour le titre */
+    padding-left: 10px;
+    border-left: 2px solid transparent; /* Bordure gauche transparente */
+  }
+  
+  /* Effet hover pour le titre */
+  .dashboard-title:hover {
+    border-left: 2px solid #337E92; /* Bordure gauche verte au survol */
+    color: #337E92; /* Couleur du texte verte au survol */
+  }
+  
+  /* Élément du tableau de bord avec padding réduit */
+  .dashboard-item {
+    width: 100%; /* La largeur de chaque élément est 100% de la largeur du dashboard */
+    padding: 8px 0; /* Réduction du padding en haut et en bas */
+    margin: 0;
+    background-color: #FFFFFF; /* Couleur de fond blanche */
+    border: none; /* Pas de bordure */
+    box-sizing: border-box; /* Inclure les bordures dans la taille totale */
+    text-align: center; /* Centrer le texte */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px; /* Hauteur des éléments réduite */
+    cursor: pointer; /* Change le curseur pour indiquer que l'élément est cliquable */
+    color: #4D4D4D; /* Couleur du texte par défaut */
+    border-left: 2px solid transparent; /* Bordure gauche transparente */
+  }
+  
+  /* Effet hover pour les éléments du tableau de bord */
+  .dashboard-item:hover {
+    background-color: #E7F0F2; /* Changement de la couleur de fond lors du survol */
+    color: #337E92; /* Changement de la couleur du texte lors du survol */
+    border-left: 5px solid #337E92; /* Bordure gauche verte au survol */
+  }
+  
+  /* Pour les boutons "Settings" et "Logout" en bas du tableau de bord */
+  .dashboard-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: auto; /* Placer les boutons en bas */
+    padding: 10px;
+  }
+  
+  .footer-button {
+    width: 100%; /* Largeur des boutons égale à celle des éléments */
+    padding: 8px 0; /* Réduction du padding */
+    margin: 0; /* Pas de marge */
+    background-color: #FFFFFF; /* Fond blanc pour les boutons */
+    color: #4D4D4D; /* Couleur du texte par défaut */
+    border: none; /* Pas de bordure */
+    cursor: pointer; /* Change le curseur pour indiquer que c'est cliquable */
+    font-size: 16px;
+    text-align: center; /* Centrer le texte */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 2px solid transparent; /* Bordure gauche transparente */
+  }
+  
+  /* Effet hover pour les boutons */
+  .footer-button:hover {
+    background-color: #E7F0F2; /* Changement de la couleur de fond lors du survol */
+    color: #337E92; /* Changement de la couleur du texte lors du survol */
+    border-left: 2px solid #337E92; /* Bordure gauche verte au survol */
+  }
+  
+  /* Pour le bouton Logout qui a une couleur de texte différente */
+  .footer-button.logout-button {
+    color: #000000; /* Couleur du texte en noir pour le bouton Logout */
+  }
+  
+  /* Pour le reste du contenu de la page */
+  body {
+    margin-left: 20%; /* Laisser de l'espace pour le dashboard sur la gauche */
+    background-color: #FFFFFF; /* Fond blanc pour la page */
+  }
+  main-content {
+    flex: 1;
+    background: var(--main-bg);
+  }
+  
+  
+  .top-header {
+    background: #ffffff;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  
+  
+  .toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+  }
+  
+  
+  .notification-btn {
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+  }
+  
+  
+  .notification-dot {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+  }
+  
+  
+  .user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  
+  .user-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  
+  .user-info h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  
+  
+  .user-info span {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+  
+  
+  .dashboard-content {
+    padding: 2rem;
+  }
+  
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: -250px;
+        top: 0;
+        bottom: 0;
+        z-index: 100;
+        transition: left 0.3s ease;
+    }
+  
+  
+    .sidebar.open {
+        left: 0;
+    }
+  
+  
+    .user-info {
+        display: none;
+    }
+  }
+  
+  
