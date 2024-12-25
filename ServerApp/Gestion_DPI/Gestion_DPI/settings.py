@@ -45,6 +45,10 @@ INSTALLED_APPS = [
     'Med_Patient'
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:4200',  
+]
+
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]

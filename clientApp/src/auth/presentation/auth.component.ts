@@ -6,14 +6,18 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
+import { Router } from '@angular/router';
 import { CommonModule } from "@angular/common";
 import { LoginUseCase } from "../domain/usecase/login.usecase";
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-auth',
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.css',
-  imports:[ReactiveFormsModule, MatFormFieldModule,
+  imports:[ReactiveFormsModule, 
+    MatFormFieldModule,
+    MatProgressSpinnerModule,
     MatInputModule,
     MatButtonModule,
     MatIconModule,
@@ -23,12 +27,13 @@ import { LoginUseCase } from "../domain/usecase/login.usecase";
 })
 export class AuthComponent {
      private snackBar = inject(MatSnackBar); 
-  private loginUseCase = inject(LoginUseCase); 
+      private loginUseCase = inject(LoginUseCase); 
 
    authForm: FormGroup;
    hidePassword: boolean = true;
+   isLoading = false;
 
-  constructor(private fb: FormBuilder) { 
+  constructor(private fb: FormBuilder, private router: Router) { 
     this.authForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -39,13 +44,14 @@ export class AuthComponent {
 
   async onSubmit() {
     if (this.authForm.valid) {
-      const params = {};
+      const params = {username:this.authForm.value.email,password:this.authForm.value.password};
+      this.isLoading=true;
     const result = await this.loginUseCase.execute(params);
     console.log(result);
     if (result) {
-      this.showToast('login seccess', 'success');
+      this.router.navigate(['/dashboard']);
     } else {
-      this.showToast('login fail', 'error');
+      this.showToast('Invalid credentials. Please try again.', 'error');
     }
     }
   }
