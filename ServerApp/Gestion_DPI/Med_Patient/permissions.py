@@ -9,3 +9,8 @@ class IsPersonnelAdministratif(permissions.BasePermission):
     def has_permission(self, request, view):
         # Vérifier si l'utilisateur est authentifié et a le rôle 'Personnel Administratif'
         return request.user and request.user.is_authenticated and request.user.role == 'PA'
+    
+class IsPatientUser(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated and request.user.role == 'P'   

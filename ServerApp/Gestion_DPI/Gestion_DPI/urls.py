@@ -31,6 +31,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from authentification.views import AuthenticationViewSet
 from Med_Patient.views import PersonnelAdministratifViewSet
+from Med_Patient.views import PatientDossierViewSet
 from authentification.views import RegisterView
 
 schema_view = get_schema_view(
@@ -48,8 +49,9 @@ schema_view = get_schema_view(
 
 
 router = DefaultRouter()
-router.register(r'auth', AuthenticationViewSet, basename='authentication')
+router.register(r'auth', AuthenticationViewSet, basename='authentification')
 router.register(r'personnel', PersonnelAdministratifViewSet, basename='personnel')
+router.register(r'mon-dossier', PatientDossierViewSet, basename='patient-dossier')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

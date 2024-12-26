@@ -83,6 +83,9 @@ class DossierPatient(models.Model):
     # Date de dernière mise à jour du dossier
     date_derniere_mise_a_jour = models.DateField(auto_now=True)
 
+    #Les antécédants du patient
+    antecedents = models.TextField(null=True, blank=True)
+
     def __str__(self):
         return f"Dossier de {self.NSS.get_nom()} {self.NSS.get_prenom()} - Dernière mise à jour: {self.date_derniere_mise_a_jour}"
     
@@ -99,9 +102,6 @@ class Consultation(models.Model):
     
     # Diagnostic de la consultation
     diagnostic = models.TextField(null=True, blank=True)
-
-    #Les antécédants du patient
-    antecedents = models.TextField(null=True, blank=True)
     
     # Résumé obligatoire contenant les antécédents
     resume = models.TextField(null=False, blank=False)

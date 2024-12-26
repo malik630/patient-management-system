@@ -2,11 +2,14 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import status
-from .serializers import UserSerializer, PatientSerializer, DossierPatientSerializer
+from .serializers import PatientDossierSerializer, UserSerializer, PatientSerializer, DossierPatientSerializer
 from .permissions import IsPersonnelAdministratif
 from django.db import transaction
 from datetime import date
 from rest_framework.permissions import IsAuthenticated
+from .models import Patient
+from django.shortcuts import get_object_or_404
+from .permissions import IsPatientUser
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
@@ -170,6 +173,7 @@ class PersonnelAdministratifViewSet(viewsets.ViewSet):
                 'NSS': patient.numero_securite_sociale,
                 'date_derniere_mise_a_jour': date.today()
             }
+            dossier_data = request.data.get('antecedants')
             dossier_serializer = DossierPatientSerializer(data=dossier_data)
             if not dossier_serializer.is_valid():
                 return Response(
@@ -192,3 +196,146 @@ class PersonnelAdministratifViewSet(viewsets.ViewSet):
                 {'error': f'Une erreur est survenue: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        
+
+class PatientDossierViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = PatientDossierSerializer
+    permission_classes = [IsAuthenticated, IsPatientUser]
+
+    
+    @swagger_auto_schema(
+        operation_summary="Liste le dossier du patient connecté",
+        operation_description="""Retourne le dossier médical complet du patient connecté.
+        Nécessite une authentification et que l'utilisateur ait le rôle patient.""",
+        responses={
+            200: openapi.Response(
+                description="Dossier patient récupéré avec succès",
+                schema=PatientDossierSerializer
+            ),
+            401: "Non authentifié",
+            403: "Pas les permissions requises (rôle patient requis)",
+            404: "Patient non trouvé"
+        },
+        tags=['Dossier Patient'],
+        manual_parameters=[
+            openapi.Parameter(
+                'Authorization',
+                openapi.IN_HEADER,
+                description="Token JWT Bearer. Ex: Bearer {token}",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="Récupère le dossier détaillé du patient",
+        operation_description="""Retourne le dossier médical détaillé du patient connecté incluant :
+        - Informations personnelles
+        - Médecin traitant
+        - Antécédents médicaux
+        - Historique des consultations
+        - Ordonnances et médicaments
+        - Examens médicaux
+        """,
+        manual_parameters=[
+            openapi.Parameter(
+                'Authorization',
+                openapi.IN_HEADER,
+                description="Token JWT Bearer. Ex: Bearer {token}",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ],
+        responses={
+            200: openapi.Response(
+                description="Dossier détaillé récupéré avec succès",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'numero_securite_sociale': openapi.Schema(type=openapi.TYPE_STRING),
+                        'nom': openapi.Schema(type=openapi.TYPE_STRING),
+                        'prenom': openapi.Schema(type=openapi.TYPE_STRING),
+                        'date_naissance': openapi.Schema(type=openapi.TYPE_STRING, format='date'),
+                        'adresse': openapi.Schema(type=openapi.TYPE_STRING),
+                        'telephone': openapi.Schema(type=openapi.TYPE_STRING),
+                        'mutuelle': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                        'medecin_traitant_nom': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                        'personne_contact_nom': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                        'personne_contact_telephone': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                        'dossier': openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                'date_derniere_mise_a_jour': openapi.Schema(type=openapi.TYPE_STRING, format='date'),
+                                'antecedents': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                                'consultations': openapi.Schema(
+                                    type=openapi.TYPE_ARRAY,
+                                    items=openapi.Schema(
+                                        type=openapi.TYPE_OBJECT,
+                                        properties={
+                                            'date_consultation': openapi.Schema(type=openapi.TYPE_STRING, format='date'),
+                                            'diagnostic': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                                            'resume': openapi.Schema(type=openapi.TYPE_STRING),
+                                            'medecin_nom': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                                            'ordonnance': openapi.Schema(
+                                                type=openapi.TYPE_OBJECT,
+                                                properties={
+                                                    'date_ordonnance': openapi.Schema(type=openapi.TYPE_STRING, format='date'),
+                                                    'medicaments': openapi.Schema(
+                                                        type=openapi.TYPE_ARRAY,
+                                                        items=openapi.Schema(
+                                                            type=openapi.TYPE_OBJECT,
+                                                            properties={
+                                                                'medicament': openapi.Schema(
+                                                                    type=openapi.TYPE_OBJECT,
+                                                                    properties={
+                                                                        'nom': openapi.Schema(type=openapi.TYPE_STRING),
+                                                                        'description': openapi.Schema(type=openapi.TYPE_STRING, nullable=True)
+                                                                    }
+                                                                ),
+                                                                'dose': openapi.Schema(type=openapi.TYPE_STRING),
+                                                                'frequence': openapi.Schema(type=openapi.TYPE_STRING),
+                                                                'duree': openapi.Schema(type=openapi.TYPE_STRING)
+                                                            }
+                                                        )
+                                                    )
+                                                }
+                                            ),
+                                            'examens': openapi.Schema(
+                                                type=openapi.TYPE_ARRAY,
+                                                items=openapi.Schema(
+                                                    type=openapi.TYPE_OBJECT,
+                                                    properties={
+                                                        'type_examen': openapi.Schema(type=openapi.TYPE_STRING),
+                                                        'date_examen': openapi.Schema(type=openapi.TYPE_STRING, format='date'),
+                                                        'bilan': openapi.Schema(type=openapi.TYPE_STRING, nullable=True)
+                                                    }
+                                                )
+                                            )
+                                        }
+                                    )
+                                )
+                            }
+                        )
+                    }
+                )
+            ),
+            401: "Non authentifié",
+            403: "Pas les permissions requises (rôle patient requis)",
+            404: "Patient non trouvé"
+        },
+        tags=['Dossier Patient']
+    )
+
+    
+    def get_queryset(self):
+        # Retourne uniquement le patient correspondant à l'utilisateur connecté
+        return Patient.objects.filter(user=self.request.user)
+    
+    def retrieve(self, request, *args, **kwargs):
+        # Récupère le patient de l'utilisateur connecté
+        patient = get_object_or_404(Patient, user=request.user)
+        serializer = self.get_serializer(patient)
+        return Response(serializer.data)        
