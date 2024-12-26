@@ -76,6 +76,7 @@ class Patient(models.Model):
         return f"{self.user.first_name} "
     
 class DossierPatient(models.Model):
+
     # Relation 1 à 1 avec le modèle Patient via le NSS
     NSS = models.OneToOneField(Patient, on_delete=models.CASCADE, unique=True)
     
@@ -89,6 +90,9 @@ class Consultation(models.Model):
 
     # Clé étrangère vers DossierPatient
     dossier_patient = models.ForeignKey(DossierPatient, on_delete=models.CASCADE, related_name="consultations")
+
+    # Clé étrangère vers Medecin
+    medecin = models.ForeignKey(Medecin, on_delete=models.CASCADE, related_name="consultations", null=True, blank=True)
     
     # Date de la consultation
     date_consultation = models.DateField()

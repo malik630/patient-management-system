@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'authentification',
     'corsheaders',
     'drf_yasg',
-    'Med_Patient'
+    'Med_Patient',
+    'Soins_Exams_Patient'
 ]
 
 CORS_ALLOWED_ORIGINS = [

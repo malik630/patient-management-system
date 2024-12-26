@@ -31,6 +31,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from authentification.views import AuthenticationViewSet
 from Med_Patient.views import PersonnelAdministratifViewSet
+from authentification.views import RegisterView
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -54,6 +55,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include(router.urls)),
+    path('register/', RegisterView.as_view(), name='register'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # Obtenir les tokens
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Rafraîchir le token
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),    # Vérifier le token
