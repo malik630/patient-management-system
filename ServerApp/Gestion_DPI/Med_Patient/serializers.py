@@ -86,21 +86,22 @@ class DossierPatientSerializer(serializers.ModelSerializer):
 class MedicamentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medicament
-        fields = ['nom', 'description']        
+        fields = ['id', 'nom', 'description']        
         
 class MedicamentOrdonnanceSerializer(serializers.ModelSerializer):
     medicament = MedicamentSerializer(read_only=True)
-
+    
     class Meta:
         model = MedicamentOrdonnance
         fields = ['medicament', 'dose', 'frequence', 'duree']
 
 class OrdonnanceSerializer(serializers.ModelSerializer):
-    medicaments = MedicamentOrdonnanceSerializer(source='medicament_ordonnances', many=True, read_only=True)
+    medicaments = MedicamentOrdonnanceSerializer(source='medicament_ordonnances', many=True)
+    description = serializers.CharField(required=False, allow_blank=True)
     
     class Meta:
         model = Ordonnance
-        fields = ['date_ordonnance', 'medicaments']
+        fields = ['date_ordonnance', 'description', 'medicaments']
 
 class ExamenSerializer(serializers.ModelSerializer):
     class Meta:
@@ -141,3 +142,26 @@ class PatientDossierSerializer(serializers.ModelSerializer):
             'personne_contact_nom', 'personne_contact_telephone', 'dossier'
         ]        
 
+class ConsultationCreateSerializer(serializers.ModelSerializer):
+    medicaments = MedicamentOrdonnanceSerializer(many=True, required=False)
+    examens = ExamenSerializer(many=True, required=False)
+    resume_medecin = serializers.CharField(required=True, write_only=True)
+
+    class Meta:
+        model = Consultation
+        fields = ['diagnostic', 'medicaments', 'examens', 'resume_medecin']
+
+    def validate(self, data):
+        if not data.get('diagnostic') and not data.get('examens'):
+            raise serializers.ValidationError(
+                "Il faut soit un diagnostic avec médicaments, soit des examens"
+            )
+        if data.get('diagnostic') and not data.get('medicaments'):
+            raise serializers.ValidationError(
+                "Un diagnostic nécessite une prescription de médicaments"
+            )
+        if not data.get('resume_medecin'):
+            raise serializers.ValidationError(
+                "Le résumé de la consultation est obligatoire"
+            )
+        return data

@@ -1,13 +1,14 @@
+from django.forms import ValidationError
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import status
-from .serializers import PatientDossierSerializer, UserSerializer, PatientSerializer, DossierPatientSerializer
+from .serializers import ConsultationCreateSerializer, PatientDossierSerializer, UserSerializer, PatientSerializer, DossierPatientSerializer
 from .permissions import IsPersonnelAdministratif
 from django.db import transaction
 from datetime import date
 from rest_framework.permissions import IsAuthenticated
-from .models import Patient
+from .models import Consultation, DossierPatient, Patient
 from django.shortcuts import get_object_or_404
 from .permissions import IsPatientUser
 from drf_yasg.utils import swagger_auto_schema
@@ -338,4 +339,124 @@ class PatientDossierViewSet(viewsets.ReadOnlyModelViewSet):
         # Récupère le patient de l'utilisateur connecté
         patient = get_object_or_404(Patient, user=request.user)
         serializer = self.get_serializer(patient)
-        return Response(serializer.data)        
+        return Response(serializer.data) 
+
+class ConsultationViewSet(viewsets.ModelViewSet):
+    queryset = Consultation.objects.all()
+    serializer_class = ConsultationCreateSerializer
+
+    @action(detail=False, methods=['post'])
+    def creer_consultation(self, request):
+        """
+        Endpoint pour créer une nouvelle consultation
+        
+        POST /api/consultations/creer_consultation/
+        {
+            "nss": "123456789",
+            "diagnostic": "Rhinopharyngite",
+            "description_ordonnance": "À prendre pendant les repas. Éviter l'alcool.",
+            "resume_medecin": "Patient présentant une forte fièvre...",
+            "medicaments": [
+                {
+                    "nom_medicament": "Doliprane",
+                    "dose": "1000mg",
+                    "frequence": "3 fois par jour",
+                    "duree": "5 jours"
+                }
+            ]
+        }
+        """
+        # Récupérer le patient et vérifier le médecin traitant
+        nss = request.data.get('nss')
+        patient = get_object_or_404(Patient, numero_securite_sociale=nss)
+        
+        if patient.medecin_traitant_id != request.user.medecin.id:
+            raise ValidationError("Vous devez être le médecin traitant du patient")
+
+        # Récupérer le dossier patient
+        dossier = get_object_or_404(DossierPatient, NSS=patient)
+
+        # Construire le résumé complet avec les antécédents obligatoires
+        resume_complet = self._construire_resume_complet(
+            dossier.antecedents,
+            request.data.get('resume_medecin'),
+            request.data.get('diagnostic'),
+            request.data.get('medicaments', []),
+            request.data.get('examens', [])
+        )
+
+        # Préparer les données de la consultation
+        consultation_data = {
+            'dossier_patient': dossier,
+            'medecin': request.user.medecin,
+            'date_consultation': date.today(),
+            'diagnostic': request.data.get('diagnostic'),
+            'resume': resume_complet
+        }
+
+        # Créer la consultation
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        consultation = Consultation.objects.create(**consultation_data)
+
+        # Gérer l'ordonnance si diagnostic présent
+        if consultation.diagnostic:
+            ordonnance = Ordonnance.objects.create(
+                consultation=consultation,
+                date_ordonnance=date.today(),
+                description=request.data.get('description_ordonnance')
+            )
+            
+            for med_data in request.data.get('medicaments', []):
+                medicament = get_object_or_404(Medicament, nom=med_data['nom_medicament'])
+                MedicamentOrdonnance.objects.create(
+                    medicament=medicament,
+                    ordonnance=ordonnance,
+                    dose=med_data['dose'],
+                    frequence=med_data['frequence'],
+                    duree=med_data['duree']
+                )
+
+        # Gérer les examens si présents
+        for exam_data in request.data.get('examens', []):
+            Examen.objects.create(
+                consultation=consultation,
+                **exam_data
+            )
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def _construire_resume_complet(self, antecedents, resume_medecin, diagnostic, medicaments, examens):
+        """Construit le résumé complet en incluant obligatoirement les antécédents"""
+        resume_sections = [
+            "=== ANTÉCÉDENTS DU PATIENT ===",
+            antecedents,
+            "\n=== RÉSUMÉ DE LA CONSULTATION ===",
+            resume_medecin
+        ]
+
+        if diagnostic:
+            resume_sections.extend([
+                "\n=== DIAGNOSTIC ===",
+                diagnostic
+            ])
+
+        if medicaments:
+            for med in medicaments:
+                resume_sections.append(
+                    f"- {med['nom_medicament']}: {med['dose']}, "
+                    f"{med['frequence']} pendant {med['duree']}"
+                )
+
+        if examens:
+            resume_sections.extend([
+                "\n=== EXAMENS PRESCRITS ==="
+            ])
+            for exam in examens:
+                resume_sections.extend([
+                    f"- Examen {exam['type_examen']} prévu le {exam['date_examen']}",
+                    f"  Bilan: {exam['bilan']}"
+                ])
+
+        return "\n".join(s for s in resume_sections if s)           

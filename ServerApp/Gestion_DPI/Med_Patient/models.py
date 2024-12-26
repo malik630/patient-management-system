@@ -114,6 +114,8 @@ class Ordonnance(models.Model):
         on_delete=models.CASCADE, 
         related_name="ordonnance"
     )
+
+    description = models.TextField(null=True, blank=True)
     
     # Date de l'ordonnance
     date_ordonnance = models.DateField(auto_now_add=True)
