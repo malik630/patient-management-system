@@ -52,7 +52,7 @@ router = DefaultRouter()
 router.register(r'auth', AuthenticationViewSet, basename='authentification')
 router.register(r'personnel', PersonnelAdministratifViewSet, basename='personnel')
 router.register(r'mon-dossier', PatientDossierViewSet, basename='patient-dossier')
-router.register(r'Consultation', PatientDossierViewSet, basename='consultation')
+router.register(r'Consultation', ConsultationViewSet, basename='consultation')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

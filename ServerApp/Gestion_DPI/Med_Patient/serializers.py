@@ -61,7 +61,7 @@ class PatientSerializer(serializers.ModelSerializer):
 class DossierPatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = DossierPatient
-        fields = ['NSS', 'date_derniere_mise_a_jour', 'antecedants']
+        fields = ['NSS', 'date_derniere_mise_a_jour', 'antecedents']
 
     def validate_NSS(self, value):
         # Vérification que le NSS correspond à un patient existant
@@ -159,6 +159,14 @@ class ConsultationCreateSerializer(serializers.ModelSerializer):
         if data.get('diagnostic') and not data.get('medicaments'):
             raise serializers.ValidationError(
                 "Un diagnostic nécessite une prescription de médicaments"
+            )
+        if data.get('diagnostic') and data.get('examens'):
+            raise serializers.ValidationError(
+                "Un diagnostic et un bilan d'examen ne peuvent pas se faire en même temps"
+            )
+        if data.get('medicaments') and data.get('examens'):
+            raise serializers.ValidationError(
+                "Vous ne pouvez pas prescrire des médicaments et proposer un bilan d'examen en même temps."
             )
         if not data.get('resume_medecin'):
             raise serializers.ValidationError(

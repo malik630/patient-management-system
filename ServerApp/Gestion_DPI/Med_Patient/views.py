@@ -8,7 +8,7 @@ from .permissions import IsPersonnelAdministratif
 from django.db import transaction
 from datetime import date
 from rest_framework.permissions import IsAuthenticated
-from .models import Consultation, DossierPatient, Patient
+from .models import Consultation, DossierPatient, Patient, Examen, Ordonnance, Medicament, MedicamentOrdonnance
 from django.shortcuts import get_object_or_404
 from .permissions import IsPatientUser
 from drf_yasg.utils import swagger_auto_schema
@@ -70,6 +70,10 @@ class PersonnelAdministratifViewSet(viewsets.ViewSet):
                         "personne_contact_telephone",
                     ],
                 ),
+                "antecedents": openapi.Schema(  # nouveau
+                    type=openapi.TYPE_STRING,
+                    description="Antécédents médicaux du patient"
+                ),
             },
             required=["user", "patient"],
         ),
@@ -97,6 +101,7 @@ class PersonnelAdministratifViewSet(viewsets.ViewSet):
                         "dossier": {
                             "NSS": "123456789000000",
                             "date_derniere_mise_a_jour": "2024-12-25",
+                            "antecedents": "Antécédents du patient..."
                         },
                     }
                 },
@@ -172,9 +177,9 @@ class PersonnelAdministratifViewSet(viewsets.ViewSet):
             # 3. Création du dossier patient
             dossier_data = {
                 'NSS': patient.numero_securite_sociale,
-                'date_derniere_mise_a_jour': date.today()
+                'date_derniere_mise_a_jour': date.today(),
+                'antecedents': request.data.get('antecedents')
             }
-            dossier_data = request.data.get('antecedants')
             dossier_serializer = DossierPatientSerializer(data=dossier_data)
             if not dossier_serializer.is_valid():
                 return Response(
@@ -342,30 +347,186 @@ class PatientDossierViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data) 
 
 class ConsultationViewSet(viewsets.ModelViewSet):
+
+    
     queryset = Consultation.objects.all()
     serializer_class = ConsultationCreateSerializer
+    
+    @swagger_auto_schema(
+    method='post',
+    operation_summary="Créer une nouvelle consultation médicale",
+    operation_description="""
+    Permet à un médecin traitant de créer une nouvelle consultation pour un patient.
+    Cette endpoint gère :
+    - La création de la consultation
+    - La création d'une ordonnance si un diagnostic est fourni
+    - L'ajout de médicaments à l'ordonnance
+    - La création d'examens associés
+    Le médecin doit être le médecin traitant déclaré du patient.
+    """,
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "nss": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Numéro de sécurité sociale du patient",
+                example="123456789012345"
+            ),
+            "resume_medecin": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Résumé de la consultation par le médecin",
+                example="Le patient présente des symptômes de grippe saisonnière..."
+            ),
+            "diagnostic": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Diagnostic établi par le médecin",
+                example="Grippe saisonnière de type A"
+            ),
+            "description_ordonnance": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Description générale de l'ordonnance",
+                example="Traitement pour grippe saisonnière"
+            ),
+            "medicaments": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                description="Liste des médicaments prescrits",
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "nom_medicament": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            example="Doliprane"
+                        ),
+                        "dose": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            example="1000mg"
+                        ),
+                        "frequence": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            example="3 fois par jour"
+                        ),
+                        "duree": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            example="5 jours"
+                        )
+                    }
+                )
+            ),
+            "examens": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                description="Liste des examens prescrits",
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "type_examen": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            example="Prise de sang"
+                        ),
+                        "date_examen": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            format="date",
+                            example="2024-12-30"
+                        ),
+                        "bilan": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            example="Bilan sanguin complet"
+                        )
+                    }
+                )
+            )
+        },
+        required=["nss", "resume_medecin"]
+    ),
+    responses={
+        201: openapi.Response(
+            description="Consultation créée avec succès",
+            examples={
+                "application/json": {
+                    "id": 1,
+                    "dossier_patient": "123456789012345",
+                    "medecin": {
+                        "id": 1,
+                        "nom": "Dr Martin",
+                        "specialite": "Généraliste"
+                    },
+                    "date_consultation": "2024-12-27",
+                    "diagnostic": "Grippe saisonnière de type A",
+                    "resume": """=== ANTÉCÉDENTS DU PATIENT ===
+Allergie aux pénicillines
+Asthme léger
+
+=== RÉSUMÉ DE LA CONSULTATION ===
+Le patient présente des symptômes de grippe saisonnière...
+
+=== DIAGNOSTIC ===
+Grippe saisonnière de type A
+
+=== MÉDICAMENTS PRESCRITS ===
+- Doliprane: 1000mg, 3 fois par jour pendant 5 jours
+
+=== EXAMENS PRESCRITS ===
+- Examen Prise de sang prévu le 2024-12-30
+  Bilan: Bilan sanguin complet""",
+                    "ordonnance": {
+                        "id": 1,
+                        "date_ordonnance": "2024-12-27",
+                        "description": "Traitement pour grippe saisonnière",
+                        "medicaments": [
+                            {
+                                "nom": "Doliprane",
+                                "dose": "1000mg",
+                                "frequence": "3 fois par jour",
+                                "duree": "5 jours"
+                            }
+                        ]
+                    },
+                    "examens": [
+                        {
+                            "type_examen": "Prise de sang",
+                            "date_examen": "2024-12-30",
+                            "bilan": "Bilan sanguin complet"
+                        }
+                    ]
+                }
+            }
+        ),
+        400: openapi.Response(
+            description="Données invalides",
+            examples={
+                "application/json": {
+                    "error": "Le numéro de sécurité sociale est invalide"
+                }
+            }
+        ),
+        403: openapi.Response(
+            description="Accès non autorisé",
+            examples={
+                "application/json": {
+                    "error": "Vous devez être le médecin traitant du patient"
+                }
+            }
+        ),
+        404: openapi.Response(
+            description="Patient ou dossier non trouvé",
+            examples={
+                "application/json": {
+                    "error": "Patient non trouvé"
+                }
+            }
+        ),
+        500: openapi.Response(
+            description="Erreur serveur",
+            examples={
+                "application/json": {
+                    "error": "Une erreur est survenue lors de la création de la consultation"
+                }
+            }
+        )
+    }
+)
 
     @action(detail=False, methods=['post'])
     def creer_consultation(self, request):
-        """
-        Endpoint pour créer une nouvelle consultation
-        
-        POST /api/consultations/creer_consultation/
-        {
-            "nss": "123456789",
-            "diagnostic": "Rhinopharyngite",
-            "description_ordonnance": "À prendre pendant les repas. Éviter l'alcool.",
-            "resume_medecin": "Patient présentant une forte fièvre...",
-            "medicaments": [
-                {
-                    "nom_medicament": "Doliprane",
-                    "dose": "1000mg",
-                    "frequence": "3 fois par jour",
-                    "duree": "5 jours"
-                }
-            ]
-        }
-        """
         # Récupérer le patient et vérifier le médecin traitant
         nss = request.data.get('nss')
         patient = get_object_or_404(Patient, numero_securite_sociale=nss)
