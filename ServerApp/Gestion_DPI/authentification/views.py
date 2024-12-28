@@ -10,7 +10,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from Med_Patient.models import PersonnelAdministratif, Patient, Medecin
-from Soins_Exams_Patient.models import Infirmier, Pharmacien, LaborantainRadiologue
+from Soins_Exams_Patient.models import Infirmier, Pharmacien, LaborantinRadiologue
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
@@ -192,6 +192,6 @@ class RegisterView(APIView):
         elif role == 'LR':
             extra_fields['telephone'] = request.data.get('telephone')
             extra_fields['role'] = request.data.get('role_type')  # Laborantain ou Radiologue
-            return self.create_user(request.data, LaborantainRadiologue, **extra_fields)
+            return self.create_user(request.data, LaborantinRadiologue, **extra_fields)
 
         return Response({'error': 'Invalid role specified'}, status=status.HTTP_400_BAD_REQUEST)        

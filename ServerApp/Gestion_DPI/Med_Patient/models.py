@@ -1,4 +1,5 @@
 from django.db import models
+from Soins_Exams_Patient.models import Soin
 from authentification.models import User
 
 class PersonnelAdministratif(models.Model):
@@ -120,12 +121,27 @@ class Ordonnance(models.Model):
     # Date de l'ordonnance
     date_ordonnance = models.DateField(auto_now_add=True)
 
+    # Statut de validation de l'ordonnance
+    est_validee = models.BooleanField(
+        default=False,
+        verbose_name="Ordonnance validée",
+        help_text="Indique si l'ordonnance a été validée par le médecin"
+    )
+
 class Medicament(models.Model):
     # Nom du médicament
-    nom = models.CharField(max_length=255, unique=True)
+    nom = models.CharField(max_length=255)
     
     # Description facultative du médicament
     description = models.TextField(null=True, blank=True)
+
+    soin = models.ForeignKey(
+        Soin,
+        on_delete=models.SET_NULL,  # Si un soin est supprimé, l'ID du soin sera mis à NULL
+        null=True,
+        blank=True,
+        related_name="medicaments"
+    )
 
     def __str__(self):
         return self.nom    

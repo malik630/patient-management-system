@@ -33,6 +33,7 @@ from Med_Patient.views import PersonnelAdministratifViewSet
 from Med_Patient.views import PatientDossierViewSet
 from authentification.views import RegisterView
 from Med_Patient.views import ConsultationViewSet
+from Soins_Exams_Patient.views import PharmacienViewSet
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -53,11 +54,14 @@ router.register(r'auth', AuthenticationViewSet, basename='authentification')
 router.register(r'personnel', PersonnelAdministratifViewSet, basename='personnel')
 router.register(r'mon-dossier', PatientDossierViewSet, basename='patient-dossier')
 router.register(r'Consultation', ConsultationViewSet, basename='consultation')
+routerspgh = DefaultRouter()
+routerspgh.register(r'pharmacien', PharmacienViewSet, basename='pharmacien')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include(router.urls)),
+    path('api-spgh/', include(routerspgh.urls)),
     path('register/', RegisterView.as_view(), name='register'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # Obtenir les tokens
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Rafraîchir le token

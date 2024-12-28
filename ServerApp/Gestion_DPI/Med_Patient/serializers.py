@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from authentification.models import User
-from .models import Medecin, Patient, DossierPatient, Consultation, Ordonnance, Medicament, MedicamentOrdonnance, Examen
+from .models import Patient, DossierPatient, Consultation, Ordonnance, Medicament, MedicamentOrdonnance, Examen
 from django.contrib.auth.password_validation import validate_password
 
 class UserSerializer(serializers.ModelSerializer):
