@@ -5,12 +5,57 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import OrdonnancePharmacienSerializer
 from .permissions import IsPharmacientUser
 from django.shortcuts import get_object_or_404
-
 from Med_Patient.models import Ordonnance
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 class PharmacienViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, IsPharmacientUser]
     serializer_class = OrdonnancePharmacienSerializer
+
+    @swagger_auto_schema(
+        operation_description="Valide ou dévalide une ordonnance spécifique",
+        manual_parameters=[
+            openapi.Parameter(
+                'pk',
+                openapi.IN_PATH,
+                description="ID de l'ordonnance",
+                type=openapi.TYPE_INTEGER,
+                required=True
+            )
+        ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['action'],
+            properties={
+                'action': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=['valider', 'devalider'],
+                    description="Action à effectuer sur l'ordonnance"
+                )
+            }
+        ),
+        responses={
+            200: openapi.Response(
+                description="Ordonnance validée/dévalidée avec succès",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'message': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="Message de confirmation"
+                        ),
+                        'data': OrdonnancePharmacienSerializer
+                    }
+                )
+            ),
+            400: "Action invalide",
+            404: "Ordonnance non trouvée",
+            403: "Accès non autorisé - L'utilisateur n'est pas un pharmacien"
+        },
+        operation_id='valider_ordonnance',
+        tags=['Pharmacien']
+    )
     
     @action(detail=True, methods=['post'])
     def valider_ordonnance(self, request, pk=None):
@@ -36,6 +81,15 @@ class PharmacienViewSet(viewsets.ViewSet):
             'data': serializer.data
         })
     
+    @swagger_auto_schema(
+        operation_description="Récupère la liste de toutes les ordonnances avec leurs détails",
+        responses={
+            200: OrdonnancePharmacienSerializer(many=True),
+            403: "Accès non autorisé - L'utilisateur n'est pas un pharmacien"
+        },
+        tags=['Pharmacien']
+    )
+
     def list(self, request):
         ordonnances = Ordonnance.objects.all().prefetch_related(
             'medicament_ordonnances__medicament',
