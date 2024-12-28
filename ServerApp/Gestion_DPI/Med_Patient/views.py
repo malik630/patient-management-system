@@ -392,9 +392,9 @@ class ConsultationViewSet(viewsets.ModelViewSet):
                 items=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        "nom_medicament": openapi.Schema(
+                        "medicament_id": openapi.Schema(
                             type=openapi.TYPE_STRING,
-                            example="Doliprane"
+                            example="1"
                         ),
                         "dose": openapi.Schema(
                             type=openapi.TYPE_STRING,
@@ -569,7 +569,7 @@ Grippe saisonnière de type A
             )
             
             for med_data in request.data.get('medicaments', []):
-                medicament = get_object_or_404(Medicament, nom=med_data['nom_medicament'])
+                medicament = get_object_or_404(Medicament, id=med_data['medicament_id'])
                 MedicamentOrdonnance.objects.create(
                     medicament=medicament,
                     ordonnance=ordonnance,
@@ -604,8 +604,9 @@ Grippe saisonnière de type A
 
         if medicaments:
             for med in medicaments:
+                medicament = get_object_or_404(Medicament, id=med['medicament_id'])
                 resume_sections.append(
-                    f"- {med['nom_medicament']}: {med['dose']}, "
+                    f"- {medicament.nom}: {med['dose']}, "
                     f"{med['frequence']} pendant {med['duree']}"
                 )
 
