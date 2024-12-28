@@ -12,7 +12,7 @@ from drf_yasg import openapi
 class PharmacienViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, IsPharmacientUser]
     serializer_class = OrdonnancePharmacienSerializer
-
+    
     @swagger_auto_schema(
         operation_description="Valide ou dévalide une ordonnance spécifique",
         manual_parameters=[
@@ -31,32 +31,42 @@ class PharmacienViewSet(viewsets.ViewSet):
                 'action': openapi.Schema(
                     type=openapi.TYPE_STRING,
                     enum=['valider', 'devalider'],
-                    description="Action à effectuer sur l'ordonnance"
+                    description="Action à effectuer : 'valider' pour valider ou 'devalider' pour dévalider"
                 )
             }
         ),
         responses={
             200: openapi.Response(
-                description="Ordonnance validée/dévalidée avec succès",
+                description="Ordonnance validée ou dévalidée avec succès",
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
                         'message': openapi.Schema(
                             type=openapi.TYPE_STRING,
-                            description="Message de confirmation"
+                            description="Message de confirmation de l'action"
                         ),
-                        'data': OrdonnancePharmacienSerializer
+                        'data': openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            additional_properties=openapi.Schema(
+                                type=openapi.TYPE_STRING
+                            )
+                        )
                     }
                 )
             ),
-            400: "Action invalide",
-            404: "Ordonnance non trouvée",
-            403: "Accès non autorisé - L'utilisateur n'est pas un pharmacien"
+            400: openapi.Response(
+                description="Action invalide. L'action doit être 'valider' ou 'devalider'."
+            ),
+            404: openapi.Response(
+                description="Ordonnance non trouvée"
+            ),
+            403: openapi.Response(
+                description="Accès non autorisé - L'utilisateur n'est pas un pharmacien"
+            )
         },
-        operation_id='valider_ordonnance',
-        tags=['Pharmacien']
+        operation_id='valider_ordonnance'
     )
-    
+
     @action(detail=True, methods=['post'])
     def valider_ordonnance(self, request, pk=None):
         """
@@ -80,15 +90,6 @@ class PharmacienViewSet(viewsets.ViewSet):
             'message': f"Ordonnance {'validée' if action == 'valider' else 'dévalidée'} avec succès",
             'data': serializer.data
         })
-    
-    @swagger_auto_schema(
-        operation_description="Récupère la liste de toutes les ordonnances avec leurs détails",
-        responses={
-            200: OrdonnancePharmacienSerializer(many=True),
-            403: "Accès non autorisé - L'utilisateur n'est pas un pharmacien"
-        },
-        tags=['Pharmacien']
-    )
 
     def list(self, request):
         ordonnances = Ordonnance.objects.all().prefetch_related(
