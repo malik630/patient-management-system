@@ -526,12 +526,16 @@ Grippe saisonnière de type A
 
     @action(detail=False, methods=['post'])
     def creer_consultation(self, request):
-        # Récupérer le patient et vérifier le médecin traitant
-        nss = request.data.get('nss')
-        patient = get_object_or_404(Patient, numero_securite_sociale=nss)
+
+        try:
+            # Récupérer le patient et vérifier le médecin traitant
+            nss = request.data.get('nss')
+            patient = get_object_or_404(Patient, numero_securite_sociale=nss)
         
-        if patient.medecin_traitant_id != request.user.medecin.id:
-            raise ValidationError("Vous devez être le médecin traitant du patient")
+            if patient.medecin_traitant_id != request.user.medecin.id:
+                raise ValidationError("Vous devez être le médecin traitant du patient")
+        except ValidationError as e:
+            return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
 
         # Récupérer le dossier patient
         dossier = get_object_or_404(DossierPatient, NSS=patient)

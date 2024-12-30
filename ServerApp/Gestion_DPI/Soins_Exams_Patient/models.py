@@ -18,11 +18,11 @@ class Pharmacien(models.Model):
 
 class LaborantinRadiologue(models.Model):
     ROLE_CHOICES = [
-        ('Laborantain', 'Laborantain'),
+        ('Laborantin', 'Laborantin'),
         ('Radiologue', 'Radiologue'),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="laborantain_radiologue")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="laborantin_radiologue")
     telephone = models.CharField(max_length=15)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
 
@@ -53,41 +53,42 @@ class ResultatExamen(models.Model):
         on_delete=models.CASCADE,
         related_name='resultat'
     )
-    laborantin_radiologue = models.OneToOneField(
-        LaborantinRadiologue,
-        on_delete=models.PROTECT,  # Empêche la suppression du laborantin si des résultats existent
-        related_name='resultats_examens'
-    )
-
+    laborantin_radiologue = models.ForeignKey(LaborantinRadiologue, on_delete=models.CASCADE)
+    
     # Paramètres et leurs valeurs
     glycemie = models.CharField(
         max_length=10,
-        verbose_name="glycemie"
+        verbose_name="glycemie",
+        null=True
     )
     hypertension = models.CharField(
         max_length=10,
-        verbose_name="hypertension"
+        verbose_name="hypertension",
+        null=True
     )
 
     fer = models.CharField(
         max_length=10,
-        verbose_name="fer"
+        verbose_name="fer",
+        null=True
     )
     TSH = models.CharField(
         max_length=10,
-        verbose_name="TSH"
+        verbose_name="TSH",
+        null=True
     )
 
     cholesterol = models.CharField(
         max_length=10,
-        verbose_name="cholesterol"
+        verbose_name="cholesterol",
+        null=True
     )
     
     # Compte rendu
     compte_rendu = models.TextField(
         verbose_name="Compte rendu",
-        null=False,
-        blank=False,  # Rend le champ obligatoire
+        null=True,
+        blank=True,
         help_text="Compte rendu détaillé de l'examen"
     )
 
@@ -95,8 +96,8 @@ class ResultatExamen(models.Model):
     image_medicale = models.ImageField(
         upload_to='examens/images/',
         validators=[validate_medical_image],
-        null=False,
-        blank=False,  # Rend le champ obligatoire
+        null=True,
+        blank=True,
         verbose_name="Image médicale",
         help_text="Image médicale au format JPG, PNG ou DICOM"
     )

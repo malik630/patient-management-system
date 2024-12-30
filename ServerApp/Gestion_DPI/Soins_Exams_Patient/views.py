@@ -2,10 +2,13 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .serializers import OrdonnancePharmacienSerializer
-from .permissions import IsPharmacientUser
+
+from Soins_Exams_Patient.models import ResultatExamen
+from .serializers import ExamenSerializer, OrdonnancePharmacienSerializer, ResultatExamenSerializer
+from .permissions import IsLaborantinRadiologueUser, IsPharmacientUser
 from django.shortcuts import get_object_or_404
-from Med_Patient.models import Ordonnance
+from Med_Patient.models import Examen, Ordonnance
+from rest_framework.parsers import MultiPartParser, FormParser
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
@@ -99,3 +102,89 @@ class PharmacienViewSet(viewsets.ViewSet):
         
         serializer = self.serializer_class(ordonnances, many=True)
         return Response(serializer.data)
+    
+class ResultatExamenViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated, IsLaborantinRadiologueUser]
+    serializer_class = ResultatExamenSerializer
+    parser_classes = (MultiPartParser, FormParser)
+
+    def perform_create(self, serializer):
+        """
+        Associe automatiquement le laborantin/radiologue connecté au résultat
+        """
+        serializer.save(
+            laborantin_radiologue=self.request.user.laborantin_radiologue
+        )
+
+    def get_queryset(self):
+        user = self.request.user
+        try:
+            laborantin_radiologue = user.laborantin_radiologue
+            if laborantin_radiologue.role == 'Laborantin':
+                return ResultatExamen.objects.filter(
+                    examen__type_examen='biologique'
+                )
+            else:  # Radiologue
+                return ResultatExamen.objects.filter(
+                    examen__type_examen='radiologique'
+                )
+        except:
+            return ResultatExamen.objects.none()
+
+    @action(detail=False, methods=['get'])
+    def examens_a_traiter(self, request):
+        """Récupère les examens qui n'ont pas encore de résultats"""
+        user = request.user
+        try:
+            laborantin_radiologue = user.laborantin_radiologue
+            if laborantin_radiologue.role == 'Laborantin':
+                examens = Examen.objects.filter(
+                    type_examen='biologique',
+                    resultat__isnull=True
+                )
+            else:  # Radiologue
+                examens = Examen.objects.filter(
+                    type_examen='radiologique',
+                    resultat__isnull=True
+                )
+            
+            return Response({
+                'examens': ExamenSerializer(examens, many=True).data
+            })
+        except:
+            return Response(
+                {"error": "Utilisateur non autorisé"}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+    @action(detail=False, methods=['get'])
+    def resultats_patient(self, request):
+        """Récupère tous les résultats d'un patient par son NSS"""
+        nss = request.query_params.get('nss')
+        if not nss:
+            return Response(
+                {"error": "NSS requis"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = request.user
+        try:
+            laborantin_radiologue = user.laborantin_radiologue
+            resultats = ResultatExamen.objects.filter(
+                examen__consultation__dossier_patient__NSS__numero_securite_sociale=nss
+            )
+            
+            # Filtrer selon le rôle
+            if laborantin_radiologue.role == 'Laborantin':
+                resultats = resultats.filter(examen__type_examen='biologique')
+            else:  # Radiologue
+                resultats = resultats.filter(examen__type_examen='radiologique')
+            
+            return Response(
+                self.get_serializer(resultats, many=True).data
+            )
+        except:
+            return Response(
+                {"error": "Utilisateur non autorisé"}, 
+                status=status.HTTP_403_FORBIDDEN
+            )    

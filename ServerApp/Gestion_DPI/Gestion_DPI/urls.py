@@ -34,6 +34,9 @@ from Med_Patient.views import PatientDossierViewSet
 from authentification.views import RegisterView
 from Med_Patient.views import ConsultationViewSet
 from Soins_Exams_Patient.views import PharmacienViewSet
+from Soins_Exams_Patient.views import ResultatExamenViewSet
+from django.conf import settings
+from django.conf.urls.static import static
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -56,6 +59,7 @@ router.register(r'mon-dossier', PatientDossierViewSet, basename='patient-dossier
 router.register(r'Consultation', ConsultationViewSet, basename='consultation')
 routerspgh = DefaultRouter()
 routerspgh.register(r'pharmacien', PharmacienViewSet, basename='pharmacien')
+router.register(r'resultats', ResultatExamenViewSet, basename='resultat')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -70,3 +74,6 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

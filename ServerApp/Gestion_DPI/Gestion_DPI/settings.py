@@ -17,8 +17,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-MEDIA_URL = '/Images/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'Images')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'Media')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_yasg',
     'Med_Patient',
-    'Soins_Exams_Patient'
+    'Soins_Exams_Patient',
+    'django_extensions'
 ]
 
 CORS_ALLOWED_ORIGINS = [
